@@ -1,0 +1,158 @@
+---
+title: "Lab9"
+author: "J Bai"
+date: "11/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(microbenchmark)
+library(profvis)
+```
+
+# Activity 9
+## 1. Consider a function that counts number of odd numbers in a given vector
+```{r}
+odd_count <- function(x) { 
+  odd_num = 0
+  for (i in 1:length(x)) {
+    if (x[i] %% 2 == 1) odd_num = odd_num + 1 
+  }
+  return(odd_num) 
+}
+
+odd_count_v <- function(x) {
+  return(sum(x %% 2))
+}
+
+x <- c(1, 2, 4, 6, 9, 7, 11, 28)
+odd_count(x)
+odd_count_v(x)
+
+microbenchmark(odd_count(x), odd_count_v(x))
+```
+
+
+## 2. Create a matrix and calculate sum of each column
+```{r}
+test.matrix <- matrix(1:9, nrow = 3)
+test.matrix
+
+# loop
+#colSumsLoop <- function(m) {
+#  result <- rep(0, ncol(m))
+#  for(i in 1:ncol(m)) {
+#    result[i] <- sum(m[, i])
+#  }
+#  return(result)
+#}
+
+colSumsLoop <- function(A) {
+  m <- nrow(A)
+  n <- ncol(A)
+  y <- rep(0, n)
+  for(j in 1:n) {
+    for(i in 1:m) {
+      y[j] = y[j] + A[i,j]
+    }
+  }
+  return(y)
+}
+colSumsLoop(test.matrix)
+
+# apply
+colSumsApply <- function(m) {
+  apply(m, 2, sum)
+}
+
+colSumsApply(test.matrix)
+
+# colSums
+colSums(test.matrix)
+
+microbenchmark(colSumsLoop(test.matrix), colSumsApply(test.matrix), colSums(test.matrix))
+
+```
+
+## 3. Create a random vector of positive integers of length 1000000 elements. Use profvis() function to profile the odd_count() function defined in the problem 1 with the vector as an input.
+```{r}
+vector.million <- sample.int(100, 1000000, replace = TRUE)
+profvis({
+  odd_count <- function(x) { 
+    odd_num = 0
+    for (i in 1:length(x)) {
+      if (x[i] %% 2 == 1) odd_num = odd_num + 1 
+    }
+    return(odd_num) 
+  }
+  odd_count(vector.million)
+
+  odd_count_v <- function(x) {
+    return(sum(x %% 2))
+  }
+  odd_count(vector.million)
+})
+```
+
+# Assignment Lab 9
+## 2 Modify the sorting function (sort_vec) from “Assignment 8” (problem 3) so that it should take an additional argument ascending which causes sorting in increasing order when ‘ascending = TRUE’. 
+```{r}
+sort_vec <- function(x, ascending=TRUE) {
+  if (length(x) < 2) 
+    return(x)
+  for(last in length(x):2) { 
+    for(first in 1:(last - 1)) {
+      if(ascending) {
+        if(x[first] > x[first + 1]) { 
+          temp = x[first]
+          x[first] = x[first + 1] 
+          x[first + 1] = temp
+        }
+      }
+      else {
+        if(x[first] <= x[first + 1]) { 
+          temp = x[first]
+          x[first] = x[first + 1] 
+          x[first + 1] = temp
+        }
+      }
+    }
+  }
+  return(x) 
+}
+```
+
+## 3. Consider a simple random walk with starting point 0 and a step -1 or 1. Below is the code with dynamically allocated memory. Write your code with preallocated memory and compare time for both versions using system.time() function (use N = 1000, 10000 and 1000000).
+```{r}
+N <- 100000
+data_series = 0 
+system.time(
+  {for (i in 2:N) {
+    data_series[i] = data_series[i-1] + sample(c(-1, 1), 1) }
+  })
+
+
+data_series <- rep(0,N)
+system.time(
+  {
+    for (i in 2:N) {
+    data_series[i] = data_series[i-1] + sample(c(-1, 1), 1) }
+  })
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
